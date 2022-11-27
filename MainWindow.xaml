@@ -6,11 +6,74 @@
         xmlns:local="clr-namespace:EasyCAD"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="600" Width="800">
     <Grid>
-        <lvc:CartesianChart
-            Series="{Binding Series}"
-            x:Name="chart">
-        </lvc:CartesianChart>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="3*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.5*"/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition Height="0.5*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="15*"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Rectangle Grid.Row="2" Grid.Column="1"
+                           Fill="Gray"
+                           x:Name="leftProp"/>
+
+                <Canvas Grid.Row="1" Grid.Column="2"
+                        Grid.RowSpan="3"
+                        x:Name="canvas"
+                        MouseDown="canvas_MouseDown"
+                        Background="White"
+                        Loaded="canvas_Loaded">
+                </Canvas>
+
+
+                <Rectangle Grid.Row="2" Grid.Column="3"
+                           Fill="Gray"
+                           x:Name="rightProp"/>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="15*"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <lvc:CartesianChart Grid.Row="0" Grid.Column="2"
+                                    x:Name="chartNx"/>
+                <lvc:CartesianChart Grid.Row="1" Grid.Column="2"
+                                    x:Name="chartOx"/>
+                <lvc:CartesianChart Grid.Row="2" Grid.Column="2"
+                                    x:Name="chartUx"/>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
