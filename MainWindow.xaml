@@ -37,6 +37,8 @@
 
                 <Rectangle Grid.Row="2" Grid.Column="1"
                            Fill="Gray"
+                           Stroke="Black"
+                           StrokeThickness="1"
                            x:Name="leftProp"/>
 
                 <Canvas Grid.Row="1" Grid.Column="2"
@@ -50,6 +52,8 @@
 
                 <Rectangle Grid.Row="2" Grid.Column="3"
                            Fill="Gray"
+                           Stroke="Black"
+                           StrokeThickness="1"
                            x:Name="rightProp"/>
             </Grid>
 
@@ -74,6 +78,218 @@
                 <lvc:CartesianChart Grid.Row="2" Grid.Column="2"
                                     x:Name="chartUx"/>
             </Grid>
+        </Grid>
+        
+        <Grid Grid.Column="1"
+              Margin="3">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="0.5*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Row="0" Grid.Column="0"
+                  Margin="0, 0, 3, 3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.ColumnSpan="2"
+                           Text="Стержни"/>
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="L"/>
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="A"/>
+                <TextBox Grid.Row="2" Grid.Column="0"
+                         x:Name="newLTextBox"
+                         />
+                <TextBox Grid.Row="2" Grid.Column="1"
+                           x:Name="newATextBox"/>
+                <TextBlock Grid.Row="3" Grid.Column="0"
+                           Text="E"/>
+                <TextBlock Grid.Row="3" Grid.Column="1"
+                           Text="o"/>
+                <TextBox Grid.Row="4" Grid.Column="0"
+                           x:Name="newETextBox"/>
+                <TextBox Grid.Row="4" Grid.Column="1"
+                           x:Name="newOTextBox"/>
+                <DataGrid Grid.Row="5" Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          x:Name="rodsDataGrid"
+                          ItemsSource="{Binding Construction.Rods}">
+                </DataGrid>
+                <Button Grid.Row="6" Grid.Column="0"
+                        Content="+"
+                        Click="AddRod"/>
+                <Button Grid.Row="6" Grid.Column="1"
+                        Content="-"
+                        Click="RemoveRod"/>
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="1"
+                  Margin="3, 0, 3, 3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           Text="Распределенные нагрузки"/>
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           Text="q"/>
+                <TextBox Grid.Row="2" Grid.Column="0"
+                         Grid.ColumnSpan="2"
+                         x:Name="newQxTextBox"/>
+                <DataGrid Grid.Row="3" Grid.Column="0"
+                          Grid.ColumnSpan="2"/>
+                <Button Grid.Row="4" Grid.Column="0"
+                        Content="+"
+                        Click="AddDistributedForce"/>
+                <Button Grid.Row="4" Grid.Column="1"
+                        Content="-"
+                        Click="RemoveDistributedForce"/>
+
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="2"
+                  Margin="3, 0, 0, 3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Grid.ColumnSpan="2"
+                           Text="Сосредоточенные нагрузки"/>
+                <TextBlock Grid.Row="1" Grid.Column="0"
+                           Text="№ Узла"/>
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Text="F"/>
+                <TextBox Grid.Row="2" Grid.Column="0"
+                         x:Name="newFIndexTextBox"/>
+                <TextBox Grid.Row="2" Grid.Column="1"
+                         x:Name="newFTextBox"/>
+                <DataGrid Grid.Row="3" Grid.Column="0"
+                          Grid.ColumnSpan="2"/>
+                <Button Grid.Row="4" Grid.Column="0"
+                        Content="+"
+                        Click="AddConcentratedForce"/>
+                <Button Grid.Row="4" Grid.Column="1"
+                        Content="-"
+                        Click="RemoveConcentratedForce"/>
+
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="0"
+                  Grid.ColumnSpan="3"
+                  Margin="0, 3">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           Grid.ColumnSpan="3"
+                           Text="Заделки"/>
+
+                <RadioButton Grid.Row="1" Grid.Column="0"
+                             GroupName="Props"
+                             Content="Слева"
+                             HorizontalAlignment="Center"/>
+                <RadioButton Grid.Row="1" Grid.Column="1"
+                             GroupName="Props"
+                             Content="Слева и справа"
+                             HorizontalAlignment="Center"/>
+                <RadioButton Grid.Row="1" Grid.Column="2"
+                             GroupName="Props"
+                             Content="Справа"
+                             HorizontalAlignment="Center"/>
+            </Grid>
+
+            <Button Grid.Row="2" Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    Margin="0, 3"
+                    Content="Решить"
+                    Click="Solve"/>
+
+            <Grid Grid.Row="3" Grid.Column="0"
+                  Grid.ColumnSpan="3"
+                  Margin="0, 3, 0, 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="30"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Решение в точке"/>
+                <TextBlock Grid.Row="1"
+                           Text="L"/>
+                <TextBox Grid.Row="2"
+                         x:Name="LInPointTextBox"
+                         />
+                <Button Grid.Row="3"
+                        Margin="0, 3"
+                        Click="SolveInPoint"
+                        Content="Решить в точке"/>
+            </Grid>
+
+            <Grid Grid.Row="4" Grid.Column="0"
+                  Grid.ColumnSpan="3"
+                  Margin="0, 3, 0, 0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" 
+                           Text="Ход решения"/>
+                <TextBox Grid.Row="1"
+                           x:Name="logTextBox"
+                           IsReadOnly="True"/>
+
+            </Grid>
+            
         </Grid>
     </Grid>
 </Window>
