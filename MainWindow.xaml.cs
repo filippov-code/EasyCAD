@@ -129,38 +129,44 @@ namespace EasyCAD
             float A = float.Parse(newATextBox.Text);
             float E = float.Parse(newETextBox.Text);
             float o = float.Parse(newOTextBox.Text);
-            this.Construction.Rods.Add( new Rod(0, L, A, E, o) );
+            Construction.AddRod( new Rod(Construction.Rods.Count + 1, L, A, E, o) );
         }
 
         private void RemoveRod(object sender, RoutedEventArgs e)
         {
             Rod selectedRod = (Rod)rodsDataGrid.SelectedItem;
-            this.Construction.Rods.Remove(selectedRod);
+            Construction.RemoveRod(selectedRod);
         }
 
         private void AddDistributedForce(object sender, RoutedEventArgs e)
         {
-
+            int number = int.Parse(newQxNumberTextBox.Text);
+            float qx = float.Parse(newQxTextBox.Text);
+            Construction.SetDistributedStrain(number, qx);
         }
 
         private void RemoveDistributedForce(object sender, RoutedEventArgs e)
         {
-
+            DistributedStrain selectedConcentratedStrain = (DistributedStrain)distStrainsDataGrid.SelectedItem;
+            Construction.RemoveDistributedStrain(selectedConcentratedStrain);
         }
 
-        private void AddConcentratedForce(object sender, RoutedEventArgs e)
+        private void AddConcentratedStrain(object sender, RoutedEventArgs e)
         {
-
+            int number = int.Parse(newFNumberTextBox.Text);
+            float F = float.Parse(newFTextBox.Text);
+            Construction.SetConcentratedStrain(number, F);
         }
 
-        private void RemoveConcentratedForce(object sender, RoutedEventArgs e)
+        private void RemoveConcentratedStrain(object sender, RoutedEventArgs e)
         {
-
+            ConcentratedStrain selectedConcentratedStrain = (ConcentratedStrain)conStrainsDataGrid.SelectedItem;
+            Construction.RemoveConcentratedStrain(selectedConcentratedStrain);
         }
 
         private void Solve(object sender, RoutedEventArgs e)
         {
-
+            DrawConstruction();
         }
 
         private void SolveInPoint(object sender, RoutedEventArgs e)
@@ -171,9 +177,63 @@ namespace EasyCAD
         //Drawing
         private void DrawConstruction()
         {
-            double unitsPerMeter = canvas.ActualWidth / Construction.Rods.Sum(x => x.L);
-            double unitPerArea = canvas.ActualHeight / Construction.Rods.Max(x => x.A);
+            canvas.Children.Clear();
 
+            double unitsPerMeter = canvas.ActualWidth / Construction.Rods.Sum(x => x.L);
+            double unitsPerArea = canvas.ActualHeight / Construction.Rods.Max(x => x.A);
+            double middle = canvas.ActualHeight / 2;
+
+            //Рисование стержней
+            double l = 0;
+            foreach (Rod rod in Construction.Rods)
+            {
+                Rectangle rect = new()
+                {
+                    Width = rod.L * unitsPerMeter,
+                    Height = rod.A * unitsPerArea,
+                    Stroke = Brushes.Black,
+                    StrokeThickness = 2,
+                    Fill = Brushes.White
+                };
+                canvas.Children.Add(rect);
+                Canvas.SetTop(rect, middle - rod.A * unitsPerArea / 2);
+                Canvas.SetLeft(rect, l * unitsPerMeter);
+                l += rod.L;
+            }
+
+            //Рисование сосредоточенных нагрузок
+            foreach (var strain in Construction.ConcentratedStrains)
+            {
+                l = Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter;
+                Line line = new()
+                {
+                    X1 = l,
+                    Y1 = middle,
+                    X2 = (strain.Force > 0)? l + unitsPerMeter * 0.15f: l - unitsPerMeter * 0.15f,
+                    Y2 = middle,
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 25,
+                    StrokeEndLineCap = PenLineCap.Triangle,
+                };
+                canvas.Children.Add(line);
+            }
+
+            //Рисование распределенных нагрузок
+            foreach (var strain in Construction.DistributedStrains)
+            {
+                l = Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter;
+                Line line = new()
+                {
+                    X1 = l,
+                    Y1 = middle,
+                    X2 = (strain.qx > 0)? l + unitsPerMeter * 0.3: l - unitsPerMeter * 0.3,
+                    Y2 = middle,
+                    Stroke = Brushes.Green,
+                    StrokeThickness = 10,
+                    StrokeEndLineCap = PenLineCap.Triangle,
+                };
+                canvas.Children.Add(line);
+            }
 
         }
     }

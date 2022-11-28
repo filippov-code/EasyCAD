@@ -3,21 +3,23 @@
 namespace EasyCAD
 {
     [Serializable]
-    public class DistributedStrain
+    public struct DistributedStrain
     {
         public readonly Rod rod;
-        public readonly float x;
+        public readonly float qx;
+        public int SequenceNumber { get; set; }
         
-        public DistributedStrain(Rod myRod, float xDist)
+        public DistributedStrain(Rod myRod, float xDist, int number)
         {
+            SequenceNumber = number;
             rod = myRod;
-            x = xDist;
-            rod.distributedStrain = this;
+            qx = xDist;
+            //rod.distributedStrain = this;
         }
 
         public override string ToString()
         {
-            return $"Нагрузка на стержень {rod.Index}: {x}";
+            return $"Нагрузка на стержень {SequenceNumber}: {qx}";
         }
     }
 }

@@ -3,21 +3,21 @@
 namespace EasyCAD
 {
     [Serializable]
-    public class ConcentratedStrain
+    public struct ConcentratedStrain
     {
-        public readonly int index;
-        public readonly float force;
+        public int SequenceNumber { get; set; }
+        public float Force { get; set; }
 
 
         public ConcentratedStrain(int i, float f)
         {
-            index = i;
-            force = f;
+            SequenceNumber = i;
+            Force = f;
         }
 
         public override string ToString()
         {
-            return $"Нагрузка в узле {index + 1}: {force}";
+            return $"Нагрузка в узле {SequenceNumber}: {Force}";
         }
     }
 }

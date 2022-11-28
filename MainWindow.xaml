@@ -39,7 +39,8 @@
                            Fill="Gray"
                            Stroke="Black"
                            StrokeThickness="1"
-                           x:Name="leftProp"/>
+                           x:Name="leftProp" 
+                           Panel.ZIndex="-1"/>
 
                 <Canvas Grid.Row="1" Grid.Column="2"
                         Grid.RowSpan="3"
@@ -54,7 +55,8 @@
                            Fill="Gray"
                            Stroke="Black"
                            StrokeThickness="1"
-                           x:Name="rightProp"/>
+                           x:Name="rightProp" 
+                           Panel.ZIndex="-1"/>
             </Grid>
 
             <Grid Grid.Row="1">
@@ -134,7 +136,22 @@
                 <DataGrid Grid.Row="5" Grid.Column="0"
                           Grid.ColumnSpan="2"
                           x:Name="rodsDataGrid"
-                          ItemsSource="{Binding Construction.Rods}">
+                          ItemsSource="{Binding Construction.Rods}"
+                          AutoGenerateColumns="False"
+                          HeadersVisibility="None"
+                          SelectionMode="Single"
+                          CanUserAddRows="False"
+                          CanUserSortColumns="False"
+                          CanUserDeleteRows="False"
+                          CanUserResizeColumns="False"
+                          CanUserResizeRows="False"
+                          CanUserReorderColumns="False">
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*"
+                                    Binding="{Binding}"
+                                    IsReadOnly="True"/>
+                    </DataGrid.Columns>
                 </DataGrid>
                 <Button Grid.Row="6" Grid.Column="0"
                         Content="+"
@@ -162,13 +179,33 @@
                            Grid.ColumnSpan="2"
                            Text="Распределенные нагрузки"/>
                 <TextBlock Grid.Row="1" Grid.Column="0"
-                           Grid.ColumnSpan="2"
+                           Text="№ Стержня"/>
+                <TextBlock Grid.Row="1" Grid.Column="1"
                            Text="q"/>
                 <TextBox Grid.Row="2" Grid.Column="0"
-                         Grid.ColumnSpan="2"
+                         x:Name="newQxNumberTextBox"/>
+                <TextBox Grid.Row="2" Grid.Column="1"
                          x:Name="newQxTextBox"/>
                 <DataGrid Grid.Row="3" Grid.Column="0"
-                          Grid.ColumnSpan="2"/>
+                          Grid.ColumnSpan="2"
+                          x:Name="distStrainsDataGrid"
+                          ItemsSource="{Binding Construction.DistributedStrains}"
+                          AutoGenerateColumns="False"
+                          HeadersVisibility="None"
+                          SelectionMode="Single"
+                          CanUserAddRows="False"
+                          CanUserSortColumns="False"
+                          CanUserDeleteRows="False"
+                          CanUserResizeColumns="False"
+                          CanUserResizeRows="False"
+                          CanUserReorderColumns="False">
+                    
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*"
+                                    Binding="{Binding}"
+                                    IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
                 <Button Grid.Row="4" Grid.Column="0"
                         Content="+"
                         Click="AddDistributedForce"/>
@@ -200,17 +237,34 @@
                 <TextBlock Grid.Row="1" Grid.Column="1"
                            Text="F"/>
                 <TextBox Grid.Row="2" Grid.Column="0"
-                         x:Name="newFIndexTextBox"/>
+                         x:Name="newFNumberTextBox"/>
                 <TextBox Grid.Row="2" Grid.Column="1"
                          x:Name="newFTextBox"/>
                 <DataGrid Grid.Row="3" Grid.Column="0"
-                          Grid.ColumnSpan="2"/>
-                <Button Grid.Row="4" Grid.Column="0"
+                          Grid.ColumnSpan="2"
+                          x:Name="conStrainsDataGrid"
+                          ItemsSource="{Binding Construction.ConcentratedStrains}"
+                          AutoGenerateColumns="False"
+                          HeadersVisibility="None"
+                          SelectionMode="Single"
+                          CanUserAddRows="False"
+                          CanUserSortColumns="False"
+                          CanUserDeleteRows="False"
+                          CanUserResizeColumns="False"
+                          CanUserResizeRows="False"
+                          CanUserReorderColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="*"
+                                    Binding="{Binding}"
+                                    IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                    <Button Grid.Row="4" Grid.Column="0"
                         Content="+"
-                        Click="AddConcentratedForce"/>
+                        Click="AddConcentratedStrain"/>
                 <Button Grid.Row="4" Grid.Column="1"
                         Content="-"
-                        Click="RemoveConcentratedForce"/>
+                        Click="RemoveConcentratedStrain"/>
 
             </Grid>
 

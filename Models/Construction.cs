@@ -10,50 +10,114 @@ namespace EasyCAD
     {
         public bool LeftProp { get; set; }
         public bool RightProp { get; set; }
-        public ObservableCollection<Rod> Rods { get; set; } = new();
-        public ObservableCollection<ConcentratedStrain> ConcentratedStrains { get; set; } = new();
-        public Solution? Solution { get; set; } = null;
+        public ObservableCollection<Rod> Rods { get; } = new();
+        public ObservableCollection<DistributedStrain> DistributedStrains { get; } = new();
+        public ObservableCollection<ConcentratedStrain> ConcentratedStrains { get; } = new();
+        //public Solution? Solution { get; set; } = null;
+        public Action ConstructionChanged;
 
         public int NodesCount
         {
             get { return Rods.Count + 1; }
         }
 
-        public Construction() { }
-        public Construction(List<Rod> rs, ConcentratedStrain rightStrain, bool left, bool right)
+        public Construction() 
         {
-            //Rods = new List<Rod>(rs);
-
-            //rightConcentratedStrain = Rods.Count > 0? rightStrain: null;
-
-            //LeftProp = left;
-            //RightProp = right;
+            ConstructionChanged += RemoveUnnecessaryConcentratedStrains;
+            ConstructionChanged += RemoveUnnecessaryDistributedStrains;
         }
 
-        public bool SetConcentratedStrain(int num, float val)
+        public void AddRod(Rod rod)
         {
-            throw new NotImplementedException();
-            //if (num < 1 || num > Rods.Count + 1) return false;
-
-            //if (num < Rods.Count + 1)
-            //    Rods[num - 1].leftConcentratedStrain = new ConcentratedStrain(num - 1, val);
-            //else
-            //    rightConcentratedStrain = new ConcentratedStrain(num - 1, val);
-
-            //return true;
+            Rods.Add(rod);
+            ConstructionChanged?.Invoke();
         }
 
-        public bool RemoveConcentratedStrain(int num)
+        public void RemoveRod(Rod rod)
         {
-            throw new NotImplementedException();
-            //if (num < 1 || num > Rods.Count + 1) return false;
+            Rods.Remove(rod);
+            ConstructionChanged?.Invoke();
+        }
 
-            //if (num < Rods.Count + 1)
-            //    Rods[num - 1].leftConcentratedStrain = null;
-            //else
-            //    rightConcentratedStrain = null;
+        public void SetDistributedStrain(int number, float qx)
+        {
+            if (number < 1) return;
+            if (number > Rods.Count) return;
+            DistributedStrain? existingStrain = DistributedStrains.FirstOrDefault(x => x.SequenceNumber == number);
+            if (existingStrain != null)
+            {
+                DistributedStrains.Remove(existingStrain.Value);
+            }
+            DistributedStrains.Add(new DistributedStrain(null, qx, number));
+        }
 
-            //return true;
+        public void RemoveDistributedStrain(DistributedStrain strain)
+        {
+            DistributedStrains.Remove(strain);
+        }
+
+        private void RemoveUnnecessaryDistributedStrains()
+        {
+            if (Rods.Count == 0)
+            {
+                DistributedStrains.Clear();
+                return;
+            }
+
+            List<DistributedStrain> strainsToRemove = new();
+            foreach (var strain in DistributedStrains)
+            {
+                if (strain.SequenceNumber > Rods.Count)
+                {
+                    strainsToRemove.Add(strain);
+                }
+            }
+
+            foreach (var strain in strainsToRemove)
+            {
+                DistributedStrains.Remove(strain);
+            }
+        }
+
+        public void SetConcentratedStrain(int number, float F)
+        {
+            if (number == 0) return;
+            if (number > Rods.Count + 1) return;
+            ConcentratedStrain? existingStrain = ConcentratedStrains.FirstOrDefault(x => x.SequenceNumber == number);
+            if (existingStrain != null)
+            {
+                ConcentratedStrains.Remove(existingStrain.Value);
+            }
+            ConcentratedStrains.Add(new ConcentratedStrain(number, F));
+        }
+
+        public void RemoveConcentratedStrain(ConcentratedStrain strain)
+        {
+            ConcentratedStrains.Remove(strain);
+            //ConstructionChanged?.Invoke();
+        }
+
+        private void RemoveUnnecessaryConcentratedStrains()
+        {
+            if (Rods.Count == 0)
+            {
+                ConcentratedStrains.Clear();
+                return;
+            }
+
+            List<ConcentratedStrain> strainsToRemove = new();
+            foreach (var strain in ConcentratedStrains)
+            {
+                if (strain.SequenceNumber > Rods.Count + 1)
+                {
+                    strainsToRemove.Add(strain);
+                }
+            }
+
+            foreach (var strain in strainsToRemove)
+            {
+                ConcentratedStrains.Remove(strain);
+            }
         }
 
         public ConcentratedStrain GetConcentratedStrainByNumber(int num)
@@ -74,14 +138,14 @@ namespace EasyCAD
             return sum;
         }
 
-        public float GetNodeLengthByNumber(int num)
+        public float GetLengthUpToNode(int nodeNumber)
         {
-            if (num < 1) return -1;
-            if (num > Rods.Count + 1) return -1;
+            if (nodeNumber == 1) return 0;
+            if (nodeNumber == Rods.Count + 1) return GetLength();
             float length = 0;
-            for (int i = 0; i < num - 1; i++)
+            for (int i = 1; i < nodeNumber; i++)
             {
-                length += Rods[i].L;
+                length += Rods[i - 1].L;
             }
             return length;
         }
@@ -111,5 +175,6 @@ namespace EasyCAD
             }
             return 0;
         }
+
     }
 }

@@ -6,12 +6,10 @@ namespace EasyCAD
     public class Rod
     {
         public int Index { get; private set; }
-        public readonly float L;
-        public readonly float A;
-        public readonly float E;
-        public readonly float O;
-        public DistributedStrain distributedStrain;
-        public ConcentratedStrain leftConcentratedStrain;
+        public float L { get; set; }
+        public float A { get; set; }
+        public float E { get; set; }
+        public float O { get; set; }
 
         public Rod(int i, float l, float a, float e, float o)
         {
