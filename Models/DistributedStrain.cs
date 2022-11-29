@@ -5,21 +5,18 @@ namespace EasyCAD
     [Serializable]
     public struct DistributedStrain
     {
-        public readonly Rod rod;
-        public readonly float qx;
-        public int SequenceNumber { get; set; }
+        public int SequenceNumber { get; private set; }
+        public float Qx { get; private set; }
         
-        public DistributedStrain(Rod myRod, float xDist, int number)
+        public DistributedStrain(int number, float qx)
         {
             SequenceNumber = number;
-            rod = myRod;
-            qx = xDist;
-            //rod.distributedStrain = this;
+            Qx = qx;
         }
 
         public override string ToString()
         {
-            return $"Нагрузка на стержень {SequenceNumber}: {qx}";
+            return $"Нагрузка на стержень {SequenceNumber}: {Qx}";
         }
     }
 }

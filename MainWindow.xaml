@@ -45,9 +45,7 @@
                 <Canvas Grid.Row="1" Grid.Column="2"
                         Grid.RowSpan="3"
                         x:Name="canvas"
-                        MouseDown="canvas_MouseDown"
-                        Background="White"
-                        Loaded="canvas_Loaded">
+                        Background="White">
                 </Canvas>
 
 
@@ -89,7 +87,7 @@
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="30"/>
                 <RowDefinition Height="auto"/>
-                <RowDefinition Height="0.5*"/>
+                <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -287,14 +285,21 @@
 
                 <RadioButton Grid.Row="1" Grid.Column="0"
                              GroupName="Props"
+                             x:Name="leftPropRadio"
+                             IsChecked="True"
                              Content="Слева"
+                             Checked="PropChecked"
                              HorizontalAlignment="Center"/>
                 <RadioButton Grid.Row="1" Grid.Column="1"
                              GroupName="Props"
+                             x:Name="middlePropRadio"
+                             Checked="PropChecked"
                              Content="Слева и справа"
                              HorizontalAlignment="Center"/>
                 <RadioButton Grid.Row="1" Grid.Column="2"
                              GroupName="Props"
+                             x:Name="rightPropRadio"
+                             Checked="PropChecked"
                              Content="Справа"
                              HorizontalAlignment="Center"/>
             </Grid>
@@ -340,7 +345,8 @@
                            Text="Ход решения"/>
                 <TextBox Grid.Row="1"
                            x:Name="logTextBox"
-                           IsReadOnly="True"/>
+                           IsReadOnly="True"
+                         VerticalScrollBarVisibility="Auto"/>
 
             </Grid>
             

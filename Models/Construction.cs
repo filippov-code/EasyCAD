@@ -8,18 +8,15 @@ namespace EasyCAD
     [Serializable]
     public class Construction
     {
+        public Action ConstructionChanged;
         public bool LeftProp { get; set; }
         public bool RightProp { get; set; }
         public ObservableCollection<Rod> Rods { get; } = new();
         public ObservableCollection<DistributedStrain> DistributedStrains { get; } = new();
         public ObservableCollection<ConcentratedStrain> ConcentratedStrains { get; } = new();
-        //public Solution? Solution { get; set; } = null;
-        public Action ConstructionChanged;
 
-        public int NodesCount
-        {
-            get { return Rods.Count + 1; }
-        }
+        public float Length => Rods.Sum(x => x.L);
+        public int NodesCount => Rods.Count + 1;
 
         public Construction() 
         {
@@ -48,7 +45,7 @@ namespace EasyCAD
             {
                 DistributedStrains.Remove(existingStrain.Value);
             }
-            DistributedStrains.Add(new DistributedStrain(null, qx, number));
+            DistributedStrains.Add(new DistributedStrain(number, qx));
         }
 
         public void RemoveDistributedStrain(DistributedStrain strain)
@@ -120,28 +117,17 @@ namespace EasyCAD
             }
         }
 
-        public ConcentratedStrain GetConcentratedStrainByNumber(int num)
+        public DistributedStrain? GetDistributedStrainByRod(Rod rod)
         {
-            throw new NotImplementedException();
-            //if (num < 1 || num > Rods.Count + 1) return null;
-
-            //if (num < Rods.Count + 1)
-            //    return Rods[num - 1].leftConcentratedStrain;
-            //else
-            //    return rightConcentratedStrain;
-        }
-
-        public float GetLength()
-        {
-            float sum = 0;
-            foreach (var rod in Rods) sum += rod.L;
-            return sum;
+            int index = Rods.IndexOf(rod);
+            DistributedStrain? strain = DistributedStrains.FirstOrDefault(x => x.SequenceNumber == index + 1);
+            return strain;
         }
 
         public float GetLengthUpToNode(int nodeNumber)
         {
             if (nodeNumber == 1) return 0;
-            if (nodeNumber == Rods.Count + 1) return GetLength();
+            if (nodeNumber == Rods.Count + 1) return Length;
             float length = 0;
             for (int i = 1; i < nodeNumber; i++)
             {
@@ -153,7 +139,7 @@ namespace EasyCAD
         public Rod GetRodByLength(float L)
         {
             if (L == 0) return Rods[0];
-            if (L > GetLength()) return Rods.Last();
+            if (L > Length) return Rods.Last();
             float l = 0;
             for (int i = 0; i <= Rods.Count; i++)
             {
@@ -166,7 +152,7 @@ namespace EasyCAD
         public float GetLengthBeforeRod(float L)
         {
             if (L == 0) return L;
-            if (L >= GetLength()) L = GetLength();
+            if (L >= Length) L = Length;
             float l = 0;
             for (int i = 0; i <= Rods.Count; i++)
             {

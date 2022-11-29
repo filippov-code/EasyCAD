@@ -27,6 +27,7 @@ namespace EasyCAD
     public partial class MainWindow : Window
     {
         public Construction Construction { get; private set; } = new();
+        private Solution? CurrentSolution;
 
 
         //public SeriesCollection Series { get; set; } = new()
@@ -87,19 +88,6 @@ namespace EasyCAD
 
         }
 
-        private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            Rectangle rec = new();
-            rec.Width = canvas.ActualWidth /2;
-            rec.Height = canvas.ActualHeight/2;
-            rec.Stroke = Brushes.Black;
-            rec.Fill = Brushes.Red;
-            canvas.Children.Add(rec);
-            Canvas.SetTop(rec, canvas.ActualHeight/4);
-            Canvas.SetLeft(rec, canvas.ActualWidth / 4);
-            Canvas.SetRight(rec, canvas.ActualWidth / 4);
-        }
-
         private void canvas_Loaded(object sender, RoutedEventArgs e)
         {
             Rectangle rect = new();
@@ -129,7 +117,7 @@ namespace EasyCAD
             float A = float.Parse(newATextBox.Text);
             float E = float.Parse(newETextBox.Text);
             float o = float.Parse(newOTextBox.Text);
-            Construction.AddRod( new Rod(Construction.Rods.Count + 1, L, A, E, o) );
+            Construction.AddRod( new Rod(L, A, E, o) );
         }
 
         private void RemoveRod(object sender, RoutedEventArgs e)
@@ -167,16 +155,58 @@ namespace EasyCAD
         private void Solve(object sender, RoutedEventArgs e)
         {
             DrawConstruction();
+
+            CurrentSolution = new(Construction);
+            CurrentSolution.Calculate();
+            //logTextBox.Text += solution.ToString();
+            logTextBox.Text += "======================================================" + Environment.NewLine;
+            logTextBox.Text += "Решение" + Environment.NewLine;
+            logTextBox.Text += "======================================================" + Environment.NewLine;
+            logTextBox.Text += "---A---" + Environment.NewLine;  
+            logTextBox.Text += CurrentSolution.Amatrix.ToString();
+            logTextBox.Text += "---B---" + Environment.NewLine;
+            logTextBox.Text += CurrentSolution.Bmatrix.ToString();
+            logTextBox.Text += "---AB---" + Environment.NewLine;
+            logTextBox.Text += CurrentSolution.extendedMatrix.ToString();
+            logTextBox.Text += "--delta--" + Environment.NewLine;
+            logTextBox.Text += CurrentSolution.deltaMatrix.ToString();
+            logTextBox.Text += "---Nx---" + Environment.NewLine;
+            logTextBox.Text += CurrentSolution.Nsolutions.ToString();
+            logTextBox.Text += "---ox---" + Environment.NewLine;
+            logTextBox.Text += CurrentSolution.osolutions.ToString();
+            logTextBox.Text += "---Ux---" + Environment.NewLine;
+            logTextBox.Text += CurrentSolution.Usolutions.ToString();
         }
 
         private void SolveInPoint(object sender, RoutedEventArgs e)
         {
+            if (CurrentSolution == null) return;
+
+            float L = float.Parse(LInPointTextBox.Text);
+            Rod rod = Construction.GetRodByLength(L);
+            float lOnRod = L - Construction.GetLengthBeforeRod(L);
+            float nxPointSolution = CurrentSolution.GetNxSolution(rod, lOnRod);
+            float oxPointSolution = nxPointSolution / rod.A;
+            float uxPointSolution = CurrentSolution.GetUxSolution(rod, lOnRod);
+
+
+            logTextBox.Text += "======================================================" + Environment.NewLine;
+            logTextBox.Text += $"Решение в точке {L}" + Environment.NewLine;
+            logTextBox.Text += "======================================================" + Environment.NewLine;
+            logTextBox.Text += $"N = {nxPointSolution}" + Environment.NewLine;
+            logTextBox.Text += $"o = {oxPointSolution}" + Environment.NewLine;
+            logTextBox.Text += $"U = {uxPointSolution}" + Environment.NewLine;
 
         }
 
         //Drawing
         private void DrawConstruction()
         {
+            //Рисование опор
+            leftProp.Visibility = Construction.LeftProp ? Visibility.Visible : Visibility.Hidden;
+            rightProp.Visibility = Construction.RightProp ? Visibility.Visible : Visibility.Hidden;
+
+            if (Construction.Rods.Count == 0) return;
             canvas.Children.Clear();
 
             double unitsPerMeter = canvas.ActualWidth / Construction.Rods.Sum(x => x.L);
@@ -226,7 +256,7 @@ namespace EasyCAD
                 {
                     X1 = l,
                     Y1 = middle,
-                    X2 = (strain.qx > 0)? l + unitsPerMeter * 0.3: l - unitsPerMeter * 0.3,
+                    X2 = (strain.Qx > 0)? l + unitsPerMeter * 0.3: l - unitsPerMeter * 0.3,
                     Y2 = middle,
                     Stroke = Brushes.Green,
                     StrokeThickness = 10,
@@ -235,6 +265,25 @@ namespace EasyCAD
                 canvas.Children.Add(line);
             }
 
+        }
+
+        private void PropChecked(object sender, RoutedEventArgs e)
+        {
+            Construction.LeftProp = false;
+            Construction.RightProp = false;
+            if (leftPropRadio.IsChecked != null && leftPropRadio.IsChecked.Value)
+            {
+                Construction.LeftProp = true;
+            }
+            else if (rightPropRadio.IsChecked != null && rightPropRadio.IsChecked.Value)
+            {
+                Construction.RightProp = true;
+            }
+            else
+            {
+                Construction.LeftProp = true;
+                Construction.RightProp = true;
+            }
         }
     }
 }

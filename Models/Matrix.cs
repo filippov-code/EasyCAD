@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 
 namespace EasyCAD
@@ -76,7 +77,7 @@ namespace EasyCAD
             {
                 for (int j = 0; j < matrix[i].Count; j++)
                 {
-                    s += $"{matrix[i][j]}  ";
+                    s += $"{matrix[i][j]} ";
                 }
                 s += Environment.NewLine;
             }

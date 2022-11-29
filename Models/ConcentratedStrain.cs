@@ -5,8 +5,8 @@ namespace EasyCAD
     [Serializable]
     public struct ConcentratedStrain
     {
-        public int SequenceNumber { get; set; }
-        public float Force { get; set; }
+        public int SequenceNumber { get; private set; }
+        public float Force { get; private set; }
 
 
         public ConcentratedStrain(int i, float f)
