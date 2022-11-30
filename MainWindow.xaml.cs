@@ -1,8 +1,10 @@
-﻿using LiveCharts;
+﻿using EasyCAD.Models;
+using LiveCharts;
 using LiveCharts.Configurations;
 using LiveCharts.Defaults;
 using LiveCharts.Definitions.Series;
 using LiveCharts.Wpf;
+using LiveChartsCore.Measure;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,35 +30,15 @@ namespace EasyCAD
     {
         public Construction Construction { get; private set; } = new();
         private Solution? CurrentSolution;
+        public SolutionDataForChart? SolutionDataForChart { get; } = null;
 
-
-        //public SeriesCollection Series { get; set; } = new()
-        //{
-        //    //new LineSeries
-        //    //{
-        //    //    Values = new ChartValues<int>{1, 2, 5, 4, 1, 7, 3, 7, 8, 4, 1}
-        //    //},
-        //    //new LineSeries
-        //    //{
-        //    //    Values = new ChartValues<ObservablePoint>
-        //    //    {
-        //    //        new ObservablePoint(0, 4),
-        //    //        new ObservablePoint(1, 3),
-        //    //        new ObservablePoint(3, 8),
-        //    //        new (double.NaN, double.NaN),
-        //    //        new ObservablePoint(3, 5),
-        //    //        new ObservablePoint(18, 6),
-        //    //        new ObservablePoint(20, 12)
-        //    //    },
-        //    //    LineSmoothness = 0
-        //    //}
-        //};
+       
 
         public MainWindow()
         {
             InitializeComponent();
 
-            
+            SolutionDataForChart = new(Construction);
 
             DataContext = this;
             
@@ -158,11 +140,17 @@ namespace EasyCAD
 
             CurrentSolution = new(Construction);
             CurrentSolution.Calculate();
+            ShowSolution();
             //logTextBox.Text += solution.ToString();
+            
+        }
+
+        private void ShowSolution()
+        {
             logTextBox.Text += "======================================================" + Environment.NewLine;
             logTextBox.Text += "Решение" + Environment.NewLine;
             logTextBox.Text += "======================================================" + Environment.NewLine;
-            logTextBox.Text += "---A---" + Environment.NewLine;  
+            logTextBox.Text += "---A---" + Environment.NewLine;
             logTextBox.Text += CurrentSolution.Amatrix.ToString();
             logTextBox.Text += "---B---" + Environment.NewLine;
             logTextBox.Text += CurrentSolution.Bmatrix.ToString();
@@ -176,6 +164,10 @@ namespace EasyCAD
             logTextBox.Text += CurrentSolution.osolutions.ToString();
             logTextBox.Text += "---Ux---" + Environment.NewLine;
             logTextBox.Text += CurrentSolution.Usolutions.ToString();
+
+            SolutionDataForChart.SetSolution(CurrentSolution);
+
+
         }
 
         private void SolveInPoint(object sender, RoutedEventArgs e)

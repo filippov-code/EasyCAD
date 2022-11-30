@@ -52,6 +52,7 @@
                 <Rectangle Grid.Row="2" Grid.Column="3"
                            Fill="Gray"
                            Stroke="Black"
+                           Visibility="Hidden"
                            StrokeThickness="1"
                            x:Name="rightProp" 
                            Panel.ZIndex="-1"/>
@@ -72,11 +73,23 @@
                 </Grid.ColumnDefinitions>
 
                 <lvc:CartesianChart Grid.Row="0" Grid.Column="2"
-                                    x:Name="chartNx"/>
+                                    x:Name="chartNx"
+                                    Series="{Binding Path=SolutionDataForChart.NxSeries}"
+                                    AxisX="{Binding Path=SolutionDataForChart.NxXAxis}"
+                                    AxisY="{Binding Path=SolutionDataForChart.NxYAxis}"
+                                    />
                 <lvc:CartesianChart Grid.Row="1" Grid.Column="2"
-                                    x:Name="chartOx"/>
+                                    x:Name="chartOx"
+                                    Series="{Binding Path=SolutionDataForChart.oxSeries}"
+                                    AxisX="{Binding Path=SolutionDataForChart.oxXAxis}"
+                                    AxisY="{Binding Path=SolutionDataForChart.oxYAxis}"
+                                    />
                 <lvc:CartesianChart Grid.Row="2" Grid.Column="2"
-                                    x:Name="chartUx"/>
+                                    x:Name="chartUx"
+                                    Series="{Binding Path=SolutionDataForChart.UxSeries}"
+                                    AxisX="{Binding Path=SolutionDataForChart.UxXAxis}"
+                                    AxisY="{Binding Path=SolutionDataForChart.UxYAxis}"
+                                    />
             </Grid>
         </Grid>
         
@@ -133,6 +146,7 @@
                            x:Name="newOTextBox"/>
                 <DataGrid Grid.Row="5" Grid.Column="0"
                           Grid.ColumnSpan="2"
+                          Margin="0, 3, 0, 0"
                           x:Name="rodsDataGrid"
                           ItemsSource="{Binding Construction.Rods}"
                           AutoGenerateColumns="False"
@@ -186,6 +200,7 @@
                          x:Name="newQxTextBox"/>
                 <DataGrid Grid.Row="3" Grid.Column="0"
                           Grid.ColumnSpan="2"
+                          Margin="0, 3, 0, 0"
                           x:Name="distStrainsDataGrid"
                           ItemsSource="{Binding Construction.DistributedStrains}"
                           AutoGenerateColumns="False"
@@ -240,6 +255,7 @@
                          x:Name="newFTextBox"/>
                 <DataGrid Grid.Row="3" Grid.Column="0"
                           Grid.ColumnSpan="2"
+                          Margin="0, 3, 0, 0"
                           x:Name="conStrainsDataGrid"
                           ItemsSource="{Binding Construction.ConcentratedStrains}"
                           AutoGenerateColumns="False"
