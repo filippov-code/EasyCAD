@@ -7,162 +7,160 @@ namespace EasyCAD
     [Serializable]
     public class Solution
     {
-        public readonly Construction construction;
-        public Matrix Amatrix;
-        public Matrix Bmatrix;
-        public Matrix extendedMatrix;
-        public Matrix deltaMatrix;
-        public Matrix Nsolutions;
-        public Matrix osolutions;
-        public Matrix Usolutions;
+        public readonly Construction Construction;
+        public Matrix AMatrix { get; private set; }
+        public Matrix BMatrix { get; private set; }
+        public Matrix ABMatrix { get; private set; }
+        public Matrix DeltaMatrix { get; private set; }
+        public Matrix NxMatrix { get; private set; }
+        public Matrix OxMatrix { get; private set; }
+        public Matrix UxMatrix { get; private set; }
+        public int Accuracy { get; set; } = 3;
 
         public Solution(Construction con)
         {
-            construction = con;
+            Construction = con;
         }
 
         public void Calculate()
         {
-            if (construction == null) return;
+            if (Construction == null) return;
 
-            int nodesCount = construction.Rods.Count + 1;
+            int nodesCount = Construction.Rods.Count + 1;
 
-            Amatrix = new Matrix(nodesCount);
+            AMatrix = new Matrix(nodesCount);
 
             for (int i = 0; i < nodesCount - 1; i++)
             {
-                float value = construction.Rods[i].E * construction.Rods[i].A / construction.Rods[i].L;
-                Amatrix[i, i] += value;
-                Amatrix[i, i + 1] += -value;
-                Amatrix[i + 1, i] += -value;
-                Amatrix[i + 1, i + 1] += value;
+                double value = Construction.Rods[i].E * Construction.Rods[i].A / Construction.Rods[i].L;
+                AMatrix[i, i] += value;
+                AMatrix[i, i + 1] += -value;
+                AMatrix[i + 1, i] += -value;
+                AMatrix[i + 1, i + 1] += value;
             }
 
-            Bmatrix = new Matrix(nodesCount, 1);
+            BMatrix = new Matrix(nodesCount, 1);
 
             for (int i = 0; i < nodesCount; i++)
             {
                 if (i > 0)
                 {
-                    DistributedStrain? distributedStrain = construction.DistributedStrains.FirstOrDefault(x => x.SequenceNumber == i);
-                    //DistributedStrain? distStrain = construction.Rods[i - 1].distributedStrain;
+                    DistributedStrain? distributedStrain = Construction.DistributedStrains.FirstOrDefault(x => x.SequenceNumber == i);
                     if (distributedStrain != null)
                     {
-                        float K = distributedStrain.Value.Qx * construction.Rods[i - 1].L / 2;
-                        Bmatrix[i, 0] += K;
+                        float K = distributedStrain.Value.Qx * Construction.Rods[i - 1].L / 2;
+                        BMatrix[i, 0] += K;
                     }
                 }
 
                 if (i < nodesCount - 1)
                 {
-                    DistributedStrain? distributedStrain = construction.DistributedStrains.FirstOrDefault(x => x.SequenceNumber == i + 1);
-                    //DistributedStrain distForce = construction.Rods[i].distributedStrain;
+                    DistributedStrain? distributedStrain = Construction.DistributedStrains.FirstOrDefault(x => x.SequenceNumber == i + 1);
                     if (distributedStrain != null)
                     {
-                        float K = distributedStrain.Value.Qx * construction.Rods[i].L / 2;
-                        Bmatrix[i, 0] += K;
+                        double K = distributedStrain.Value.Qx * Construction.Rods[i].L / 2;
+                        BMatrix[i, 0] += K;
                     }
                 }
 
-                ConcentratedStrain? concentratedStrain = construction.ConcentratedStrains.FirstOrDefault(x => x.SequenceNumber == i + 1);
-                //ConcentratedStrain concForce = construction.GetConcentratedStrainByNumber(i + 1);
+                ConcentratedStrain? concentratedStrain = Construction.ConcentratedStrains.FirstOrDefault(x => x.SequenceNumber == i + 1);
                 if (concentratedStrain != null)
                 {
                     float K = concentratedStrain.Value.Force;
-                    Bmatrix[i, 0] += K;
+                    BMatrix[i, 0] += K;
                 }
             }
 
-            if (construction.LeftProp)
+            if (Construction.LeftProp)
             {
                 for (int i = 0; i < nodesCount; i++)
                 {
-                    if (i == 0) Amatrix[0, i] = 1f;
-                    else Amatrix[0, i] = 0f;
+                    if (i == 0) AMatrix[0, i] = 1f;
+                    else AMatrix[0, i] = 0f;
                 }
-                Bmatrix[0, 0] = 0;
+                BMatrix[0, 0] = 0;
             }
-            if (construction.RightProp)
+            if (Construction.RightProp)
             {
                 for (int i = 0; i < nodesCount; i++)
                 {
-                    if (i == nodesCount - 1) Amatrix[nodesCount - 1, i] = 1f;
-                    else Amatrix[nodesCount - 1, i] = 0f;
+                    if (i == nodesCount - 1) AMatrix[nodesCount - 1, i] = 1f;
+                    else AMatrix[nodesCount - 1, i] = 0f;
                 }
-                Bmatrix[nodesCount - 1, 0] = 0;
+                BMatrix[nodesCount - 1, 0] = 0;
             }
 
-            extendedMatrix = Matrix.GetExtendedMatrix(Amatrix, Bmatrix);
+            ABMatrix = Matrix.GetExtendedMatrix(AMatrix, BMatrix);
 
-            deltaMatrix = Matrix.SolveSystemByGaussian(Amatrix, Bmatrix);
+            DeltaMatrix = Matrix.SolveSystemByGaussian(AMatrix, BMatrix);
 
-            Nsolutions = new Matrix(construction.Rods.Count, 2);
-            for (int i = 0; i < construction.Rods.Count; i++)
+            NxMatrix = new Matrix(Construction.Rods.Count, 2);
+            for (int i = 0; i < Construction.Rods.Count; i++)
             {
-                Rod rod = construction.Rods[i];
-                Nsolutions[i, 0] = GetNxSolution(rod, 0);
-                Nsolutions[i, 1] = GetNxSolution(rod, rod.L);
+                Rod rod = Construction.Rods[i];
+                NxMatrix[i, 0] = GetNxSolution(rod, 0);
+                NxMatrix[i, 1] = GetNxSolution(rod, rod.L);
             }
 
-            osolutions = new Matrix(construction.Rods.Count, 2);
-            for (int i = 0; i < construction.Rods.Count; i++)
+            OxMatrix = new Matrix(Construction.Rods.Count, 2);
+            for (int i = 0; i < Construction.Rods.Count; i++)
             {
-                osolutions[i, 0] = Nsolutions[i, 0] / construction.Rods[i].A;
-                osolutions[i, 1] = Nsolutions[i, 1] / construction.Rods[i].A;
+                OxMatrix[i, 0] = NxMatrix[i, 0] / Construction.Rods[i].A;
+                OxMatrix[i, 1] = NxMatrix[i, 1] / Construction.Rods[i].A;
             }
 
-            Usolutions = new Matrix(construction.Rods.Count, 2);
-            for (int i = 0; i < construction.Rods.Count; i++)
+            UxMatrix = new Matrix(Construction.Rods.Count, 2);
+            for (int i = 0; i < Construction.Rods.Count; i++)
             {
-                Rod rod = construction.Rods[i];
-                Usolutions[i, 0] = GetUxSolution(rod, 0);
-                Usolutions[i, 1] = GetUxSolution(rod, rod.L);
+                Rod rod = Construction.Rods[i];
+                UxMatrix[i, 0] = GetUxSolution(rod, 0);
+                UxMatrix[i, 1] = GetUxSolution(rod, rod.L);
             }
         }
 
         public System.Drawing.PointF GetDeltasByRod(Rod rod)
         {
-            int i = construction.Rods.IndexOf(rod);
-            return new System.Drawing.PointF(deltaMatrix[i, 0], deltaMatrix[i + 1, 0]);
+            int i = Construction.Rods.IndexOf(rod);
+            return new System.Drawing.PointF((float)Math.Round(DeltaMatrix[i, 0], Accuracy), (float)Math.Round(DeltaMatrix[i + 1, 0], Accuracy));
         }
 
-        public float GetNxSolution(Rod rod, float lengthX)
+        public double GetNxSolution(Rod rod, double lengthX)
         {
             System.Drawing.PointF delta01 = GetDeltasByRod(rod);
-            DistributedStrain? strain = construction.GetDistributedStrainByRod(rod);
-            float qx = strain == null ? 0 : strain.Value.Qx;
-            float first = (rod.E * rod.A / rod.L) * (delta01.Y - delta01.X);
-            float second = (qx * rod.L / 2) * (1 - (2 * lengthX) / rod.L);
-            return first + second;
+            DistributedStrain? strain = Construction.GetDistributedStrainByRod(rod);
+            double qx = strain == null ? 0 : strain.Value.Qx;
+            double first = (rod.E * rod.A / rod.L) * (delta01.Y - delta01.X);
+            double second = (qx * rod.L / 2) * (1 - (2 * lengthX) / rod.L);
+            return Math.Round(first + second, Accuracy);
         }
 
-        public float GetUxSolution(Rod rod, float lengthX)
+        public double GetUxSolution(Rod rod, double lengthX)
         {
             System.Drawing.PointF delta01 = GetDeltasByRod(rod);
-            DistributedStrain? strain = construction.GetDistributedStrainByRod(rod);
-            float qx = strain == null ? 0 : strain.Value.Qx;
-            float first = (lengthX / rod.L) * (delta01.Y - delta01.X);
-            float second = ((qx * rod.L * rod.L * lengthX) / (2 * rod.E * rod.A * rod.L)) * (1 - lengthX / rod.L);
-            return delta01.X + first + second;
+            DistributedStrain? strain = Construction.GetDistributedStrainByRod(rod);
+            double qx = strain == null ? 0 : strain.Value.Qx;
+            double first = (lengthX / rod.L) * (delta01.Y - delta01.X);
+            double second = ((qx * rod.L * rod.L * lengthX) / (2 * rod.E * rod.A * rod.L)) * (1 - lengthX / rod.L);
+            return Math.Round(delta01.X + first + second, Accuracy);
         }
 
-        public float[,] GetValuesTable(int accuracy)
+        public double[,] GetValuesTable(int accuracyStep)
         {
-            float length = construction.Length;
+            float length = Construction.Length;
             //float progress = 0;
-            float progressStep = (float)Math.Pow(0.1d, accuracy);
+            double progressStep = (float)Math.Pow(0.1d, accuracyStep);
             int steps = (int)(length / progressStep) + 1;
-            float[,] table = new float[steps, 5];
+            double[,] table = new double[steps, 5];
 
             int i = 0;
-            for (float progress = 0; progress < length + progressStep; progress += progressStep, i++)
+            for (double progress = 0; progress < length + progressStep; progress += progressStep, i++)
             {
-                progress = (float)Math.Round(progress, accuracy);
+                progress = (float)Math.Round(progress, accuracyStep);
 
-                Rod rod = construction.GetRodByLength(progress);
-                float lOnRod = progress - construction.GetLengthBeforeRod(progress);
+                Rod rod = Construction.GetRodByLength(progress);
+                double lOnRod = progress - Construction.GetLengthBeforeRod(progress);
 
-                float nx = GetNxSolution(rod, lOnRod);
+                double nx = GetNxSolution(rod, lOnRod);
                 table[i, 0] = progress;
                 table[i, 1] = nx;
                 table[i, 2] = nx / rod.A;
@@ -171,49 +169,6 @@ namespace EasyCAD
             }
 
             return table;
-        }
-
-        public override string ToString()
-        {
-            StringBuilder stringBuilder = new StringBuilder();
-
-            stringBuilder.AppendLine("A\t\tB\t\tAB");
-            for (int i = 0; i < Amatrix.RowsCount; i++)
-            {
-                for (int j = 0; j < Amatrix.ColumnCount; j++)
-                    stringBuilder.Append($"{Amatrix[i, j]} ");
-                stringBuilder.Append("\t\t");
-                for (int j = 0; j < Bmatrix.ColumnCount; j++)
-                    stringBuilder.Append($"{Bmatrix[i, j]} ");
-                stringBuilder.Append("\t\t");
-                for (int j = 0; j < extendedMatrix.ColumnCount; j++)
-                    stringBuilder.Append($"{extendedMatrix[i, j]} ");
-                stringBuilder.Append("\n");
-            }
-            stringBuilder.AppendLine("delta");
-            for (int i = 0; i < deltaMatrix.RowsCount; i++)
-            {
-                for (int j = 0; j < deltaMatrix.ColumnCount; j++)
-                {
-                    stringBuilder.Append($"{deltaMatrix[i, j]} ");
-                }
-                stringBuilder.Append("\n");
-            }
-            stringBuilder.AppendLine("Nx\t\tox\t\tUx");
-            for (int i = 0; i < Nsolutions.RowsCount; i++)
-            {
-                for (int j = 0; j < Nsolutions.ColumnCount; j++)
-                    stringBuilder.Append($"{Nsolutions[i, j]} ");
-                stringBuilder.Append("\t\t");
-                for (int j = 0; j < osolutions.ColumnCount; j++)
-                    stringBuilder.Append($"{osolutions[i, j]} ");
-                stringBuilder.Append("\t\t");
-                for (int j = 0; j < Usolutions.ColumnCount; j++)
-                    stringBuilder.Append($"{Usolutions[i, j]} ");
-                stringBuilder.Append("\n");
-            }
-
-            return stringBuilder.ToString();
         }
     }
 }

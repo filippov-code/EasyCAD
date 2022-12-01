@@ -1,24 +1,9 @@
 ﻿using EasyCAD.Models;
-using LiveCharts;
-using LiveCharts.Configurations;
-using LiveCharts.Defaults;
-using LiveCharts.Definitions.Series;
-using LiveCharts.Wpf;
-using LiveChartsCore.Measure;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace EasyCAD
@@ -29,7 +14,7 @@ namespace EasyCAD
     public partial class MainWindow : Window
     {
         public Construction Construction { get; private set; } = new();
-        private Solution? CurrentSolution;
+        private Solution? currentSolution;
         public SolutionDataForChart? SolutionDataForChart { get; } = null;
 
        
@@ -40,106 +25,117 @@ namespace EasyCAD
 
             SolutionDataForChart = new(Construction);
 
+            Construction.ConstructionChanged += RedrawConstruction;
+            SizeChanged += (object sender, SizeChangedEventArgs e) => RedrawConstruction();
+
             DataContext = this;
-            
-            //Series.Add(new LineSeries
-            //{
-            //    Values = new ChartValues<ObservablePoint>(),
-            //    Configuration = Mappers.Xy<ObservablePoint>()
-            //                        .X((value, index) => index / 100f)
-            //                        .Y((value, index) => value.Y)
-            //                        .Fill((value, index) => index == 0 || index == Series.Last().Values.Count - 1 ? null : Brushes.Transparent)
-            //                        .Stroke((value, index) => index == 0 || index == Series.Last().Values.Count - 1 ? Brushes.Red : Brushes.Transparent)
 
-            //});
-
-            //for (double i = 0; i <= 20; i += 0.01d)
-            //{
-            //    Series.Last().Values.Add(new ObservablePoint(i, Math.Sin(i)));
-            //}
-
-        }
-
-        private object GetChartMapper(ISeriesView series, float d)
-        {
-            return Mappers.Xy<ObservablePoint>()
-                                    .X((value, index) => index / d)
-                                    .Y((value, index) => value.Y)
-                                    .Fill((value, index) => index == 0 || index == series.Values.Count - 1 ? null : Brushes.Transparent)
-                                    .Stroke((value, index) => index == 0 || index == series.Values.Count - 1 ? Brushes.Red : Brushes.Transparent);
-
-        }
-
-        private void canvas_Loaded(object sender, RoutedEventArgs e)
-        {
-            Rectangle rect = new();
-            rect.Width = canvas.ActualWidth /2;
-            rect.Height = canvas.ActualHeight/3;
-            rect.Stroke = Brushes.Black;
-            rect.Fill = Brushes.Blue;
-            canvas.Children.Add(rect);
-            Canvas.SetTop(rect, 0);
-            Canvas.SetLeft(rect, 0);
-
-            Rectangle rect2 = new()
-            {
-                Width = canvas.ActualWidth / 2,
-                Height = canvas.ActualHeight / 3,
-                Stroke = Brushes.Black,
-                Fill = Brushes.Red
-            };
-            canvas.Children.Add(rect2);
-            Canvas.SetTop(rect2, 0);
-            Canvas.SetLeft(rect2, canvas.ActualWidth / 2);
         }
 
         private void AddRod(object sender, RoutedEventArgs e)
         {
-            float L = float.Parse(newLTextBox.Text);
-            float A = float.Parse(newATextBox.Text);
-            float E = float.Parse(newETextBox.Text);
-            float o = float.Parse(newOTextBox.Text);
+            float L, A, E, o;
+
+            if (!float.TryParse(newLTextBox.Text, out L) || L <= 0)
+            {
+                MessageBox.Show("Значение L для стержня некорректно");
+                return;
+            }
+            if (!float.TryParse(newATextBox.Text, out A) || A <= 0)
+            {
+                MessageBox.Show("Значение A для стержня некорректно");
+                return;
+            }
+            if (!float.TryParse(newETextBox.Text, out E))
+            {
+                MessageBox.Show("Значение E для стержня некорректно");
+                return;
+            }
+            if (!float.TryParse(newOTextBox.Text, out o))
+            {
+                MessageBox.Show("Значение o для стержня некорректно");
+                return;
+            }
+
             Construction.AddRod( new Rod(L, A, E, o) );
         }
 
         private void RemoveRod(object sender, RoutedEventArgs e)
         {
+            if (rodsDataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите стержень из списка для удаления");
+                return;
+            }
             Rod selectedRod = (Rod)rodsDataGrid.SelectedItem;
             Construction.RemoveRod(selectedRod);
         }
 
         private void AddDistributedForce(object sender, RoutedEventArgs e)
         {
-            int number = int.Parse(newQxNumberTextBox.Text);
-            float qx = float.Parse(newQxTextBox.Text);
+            int number;
+            if (!int.TryParse(newQxNumberTextBox.Text, out number) || number < 1)
+            {
+                MessageBox.Show("Значение номера стержня некорректно");
+                return;
+            }
+            float qx;
+            if (!float.TryParse(newQxTextBox.Text, out qx))
+            {
+                MessageBox.Show("Значение распределённой нагрузки некорректно");
+                return;
+            }
             Construction.SetDistributedStrain(number, qx);
         }
 
         private void RemoveDistributedForce(object sender, RoutedEventArgs e)
         {
+            if (distStrainsDataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите нагрузку из списка для удаления");
+                return;
+            }
             DistributedStrain selectedConcentratedStrain = (DistributedStrain)distStrainsDataGrid.SelectedItem;
             Construction.RemoveDistributedStrain(selectedConcentratedStrain);
         }
 
         private void AddConcentratedStrain(object sender, RoutedEventArgs e)
         {
-            int number = int.Parse(newFNumberTextBox.Text);
-            float F = float.Parse(newFTextBox.Text);
+            int number;
+            if (!int.TryParse(newFNumberTextBox.Text, out number) || number < 1)
+            {
+                MessageBox.Show("Значение номера узла некорректно");
+                return;
+            }
+            float F;
+            if (!float.TryParse(newFTextBox.Text, out F))
+            {
+                MessageBox.Show("Значение сосредоточенной нагрузки некорректно");
+                return;
+            }
             Construction.SetConcentratedStrain(number, F);
         }
 
         private void RemoveConcentratedStrain(object sender, RoutedEventArgs e)
         {
+            if (conStrainsDataGrid.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите нагрузку из списка для удаления");
+                return;
+            }
             ConcentratedStrain selectedConcentratedStrain = (ConcentratedStrain)conStrainsDataGrid.SelectedItem;
             Construction.RemoveConcentratedStrain(selectedConcentratedStrain);
         }
 
         private void Solve(object sender, RoutedEventArgs e)
         {
-            DrawConstruction();
-
-            CurrentSolution = new(Construction);
-            CurrentSolution.Calculate();
+            if (Construction.Length == 0)
+            {
+                MessageBox.Show("Конструкция не имеет стержней");
+                return;
+            }
+            currentSolution = new(Construction);
+            currentSolution.Calculate();
             ShowSolution();
             //logTextBox.Text += solution.ToString();
             
@@ -147,39 +143,53 @@ namespace EasyCAD
 
         private void ShowSolution()
         {
+            if (currentSolution == null) return;
+
             logTextBox.Text += "======================================================" + Environment.NewLine;
             logTextBox.Text += "Решение" + Environment.NewLine;
             logTextBox.Text += "======================================================" + Environment.NewLine;
             logTextBox.Text += "---A---" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.Amatrix.ToString();
+            logTextBox.Text += currentSolution.AMatrix.ToString();
             logTextBox.Text += "---B---" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.Bmatrix.ToString();
+            logTextBox.Text += currentSolution.BMatrix.ToString();
             logTextBox.Text += "---AB---" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.extendedMatrix.ToString();
+            logTextBox.Text += currentSolution.ABMatrix.ToString();
             logTextBox.Text += "--delta--" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.deltaMatrix.ToString();
+            logTextBox.Text += currentSolution.DeltaMatrix.ToString();
             logTextBox.Text += "---Nx---" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.Nsolutions.ToString();
+            logTextBox.Text += currentSolution.NxMatrix.ToString();
             logTextBox.Text += "---ox---" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.osolutions.ToString();
+            logTextBox.Text += currentSolution.OxMatrix.ToString();
             logTextBox.Text += "---Ux---" + Environment.NewLine;
-            logTextBox.Text += CurrentSolution.Usolutions.ToString();
+            logTextBox.Text += currentSolution.UxMatrix.ToString();
 
-            SolutionDataForChart.SetSolution(CurrentSolution);
-
-
+            SolutionDataForChart.SetSolution(currentSolution);
         }
 
         private void SolveInPoint(object sender, RoutedEventArgs e)
         {
-            if (CurrentSolution == null) return;
+            if (currentSolution == null)
+            {
+                MessageBox.Show("Сначала нужно решить задачу для всей конструкции");
+                return;
+            }
 
-            float L = float.Parse(LInPointTextBox.Text);
+            ShowSolveInPoint();
+        }
+
+        private void ShowSolveInPoint()
+        {
+            float L;
+            if (!float.TryParse(LInPointTextBox.Text, out L) || L <= 0 || L > Construction.Length)
+            {
+                MessageBox.Show("Значение L для точки некорректно");
+                return;
+            }
             Rod rod = Construction.GetRodByLength(L);
-            float lOnRod = L - Construction.GetLengthBeforeRod(L);
-            float nxPointSolution = CurrentSolution.GetNxSolution(rod, lOnRod);
-            float oxPointSolution = nxPointSolution / rod.A;
-            float uxPointSolution = CurrentSolution.GetUxSolution(rod, lOnRod);
+            double lOnRod = L - Construction.GetLengthBeforeRod(L);
+            double nxPointSolution = currentSolution.GetNxSolution(rod, lOnRod);
+            double oxPointSolution = nxPointSolution / rod.A;
+            double uxPointSolution = currentSolution.GetUxSolution(rod, lOnRod);
 
 
             logTextBox.Text += "======================================================" + Environment.NewLine;
@@ -188,11 +198,10 @@ namespace EasyCAD
             logTextBox.Text += $"N = {nxPointSolution}" + Environment.NewLine;
             logTextBox.Text += $"o = {oxPointSolution}" + Environment.NewLine;
             logTextBox.Text += $"U = {uxPointSolution}" + Environment.NewLine;
-
         }
 
         //Drawing
-        private void DrawConstruction()
+        private void RedrawConstruction()
         {
             //Рисование опор
             leftProp.Visibility = Construction.LeftProp ? Visibility.Visible : Visibility.Hidden;
@@ -231,32 +240,80 @@ namespace EasyCAD
                 {
                     X1 = l,
                     Y1 = middle,
-                    X2 = (strain.Force > 0)? l + unitsPerMeter * 0.15f: l - unitsPerMeter * 0.15f,
+                    X2 = (strain.Force > 0) ? l + unitsPerMeter * 0.15f : l - unitsPerMeter * 0.15f,
                     Y2 = middle,
                     Stroke = Brushes.Red,
                     StrokeThickness = 25,
                     StrokeEndLineCap = PenLineCap.Triangle,
                 };
                 canvas.Children.Add(line);
+                //canvas.Children.Add(DrawLinkArrow(new(l, middle), new((strain.Force > 0) ? l + unitsPerMeter * 0.15f : l - unitsPerMeter * 0.15f, middle), Brushes.Red));
             }
 
             //Рисование распределенных нагрузок
             foreach (var strain in Construction.DistributedStrains)
             {
                 l = Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter;
-                Line line = new()
-                {
-                    X1 = l,
-                    Y1 = middle,
-                    X2 = (strain.Qx > 0)? l + unitsPerMeter * 0.3: l - unitsPerMeter * 0.3,
-                    Y2 = middle,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 10,
-                    StrokeEndLineCap = PenLineCap.Triangle,
-                };
-                canvas.Children.Add(line);
+                double x1 = (strain.Qx > 0) ? Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter : Construction.GetLengthUpToNode(strain.SequenceNumber + 1) * unitsPerMeter;
+                double y1 = middle;
+                double x2 = (strain.Qx > 0) ? Construction.GetLengthUpToNode(strain.SequenceNumber + 1) * unitsPerMeter : Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter;
+                double y2 = middle;
+                canvas.Children.Add(GetLinkArrow(new(x1, y1), new(x2, y2), Brushes.Green));
+                //Line line = new()
+                //{
+                //    X1 = (strain.Qx > 0)? Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter: Construction.GetLengthUpToNode(strain.SequenceNumber + 1) * unitsPerMeter,
+                //    Y1 = middle,
+                //    X2 = (strain.Qx > 0)? Construction.GetLengthUpToNode(strain.SequenceNumber + 1) * unitsPerMeter: Construction.GetLengthUpToNode(strain.SequenceNumber) * unitsPerMeter,
+                //    Y2 = middle,
+                //    Stroke = Brushes.Green,
+                //    StrokeThickness = 10,
+                //    StrokeEndLineCap = PenLineCap.Triangle,
+                //};
+                //canvas.Children.Add(line);
             }
+        }
+        private Shape GetLinkArrow(Point p1, Point p2, Brush brush)
+        {
+            GeometryGroup lineGroup = new GeometryGroup();
+            double theta = Math.Atan2((p2.Y - p1.Y), (p2.X - p1.X)) * 180 / Math.PI;
 
+            PathGeometry pathGeometry = new PathGeometry();
+            PathFigure pathFigure = new PathFigure();
+            Point p = new Point(p1.X + ((p2.X - p1.X) / 1), p1.Y + ((p2.Y - p1.Y) / 1));
+            pathFigure.StartPoint = p;
+
+            Point lpoint = new Point(p.X + 6, p.Y + 15);
+            Point rpoint = new Point(p.X - 6, p.Y + 15);
+            LineSegment seg1 = new LineSegment();
+            seg1.Point = lpoint;
+            pathFigure.Segments.Add(seg1);
+
+            LineSegment seg2 = new LineSegment();
+            seg2.Point = rpoint;
+            pathFigure.Segments.Add(seg2);
+
+            LineSegment seg3 = new LineSegment();
+            seg3.Point = p;
+            pathFigure.Segments.Add(seg3);
+
+            pathGeometry.Figures.Add(pathFigure);
+            RotateTransform transform = new RotateTransform();
+            transform.Angle = theta + 90;
+            transform.CenterX = p.X;
+            transform.CenterY = p.Y;
+            pathGeometry.Transform = transform;
+            lineGroup.Children.Add(pathGeometry);
+
+            LineGeometry connectorGeometry = new LineGeometry();
+            connectorGeometry.StartPoint = p1;
+            connectorGeometry.EndPoint = p2;
+            lineGroup.Children.Add(connectorGeometry);
+            Path path = new System.Windows.Shapes.Path();
+            path.Data = lineGroup;
+            path.StrokeThickness = 4;
+            path.Stroke = path.Fill = brush;
+
+            return path;
         }
 
         private void PropChecked(object sender, RoutedEventArgs e)

@@ -8,7 +8,7 @@ namespace EasyCAD
     [Serializable]
     public class Matrix
     {
-        List<List<float>> matrix = new List<List<float>>();
+        List<List<double>> matrix = new List<List<double>>();
 
         public int RowsCount
         {
@@ -24,7 +24,7 @@ namespace EasyCAD
         {
             for (int i = 0; i < r; i++)
             {
-                matrix.Add(new List<float>());
+                matrix.Add(new List<double>());
                 for (int j = 0; j < c; j++)
                     matrix[i].Add(0);
             }
@@ -34,27 +34,27 @@ namespace EasyCAD
         {
             for (int i = 0; i < v; i++)
             {
-                matrix.Add(new List<float>());
+                matrix.Add(new List<double>());
                 for (int j = 0; j < v; j++)
                     matrix[i].Add(0);
             }
         }
 
-        public void AddRows(int firstIndex, int secondIndex, float number = 1f)
+        public void AddRows(int firstIndex, int secondIndex, double value = 1d)
         {
             //сложение строк
             for (int i = 0; i < ColumnCount; i++)
             {
-                this[firstIndex, i] += this[secondIndex, i] * number;
+                this[firstIndex, i] += this[secondIndex, i] * value;
             }
         }
 
-        public void MultiplyRowNyNumber(int rowIndex, float number)
+        public void MultiplyRowNyNumber(int rowIndex, double value)
         {
             //вторая умноженная на number прибавляется к первой
             for (int i = 0; i < ColumnCount; i++)
             {
-                this[rowIndex, i] *= number;
+                this[rowIndex, i] *= value;
             }
         }
 
@@ -84,7 +84,7 @@ namespace EasyCAD
             return s;
         }
 
-        public float this[int r, int c]
+        public double this[int r, int c]
         {
             get { return matrix[r][c]; }
             set { matrix[r][c] = value; }
@@ -135,7 +135,7 @@ namespace EasyCAD
             return solution;
         }
 
-        public float GetMaxInRow(int i)
+        public double GetMaxInRow(int i)
         {
             return matrix[i].Max();
         }

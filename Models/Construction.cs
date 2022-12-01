@@ -9,8 +9,26 @@ namespace EasyCAD
     public class Construction
     {
         public Action ConstructionChanged;
-        public bool LeftProp { get; set; }
-        public bool RightProp { get; set; }
+        private bool leftProp;
+        public bool LeftProp 
+        {
+            get => leftProp;
+            set
+            {
+                leftProp = value;
+                ConstructionChanged?.Invoke();
+            }
+        }
+        private bool rightProp;
+        public bool RightProp 
+        { 
+            get => rightProp; 
+            set
+            {
+                rightProp = value;
+                ConstructionChanged?.Invoke();
+            }
+        }
         public ObservableCollection<Rod> Rods { get; } = new();
         public ObservableCollection<DistributedStrain> DistributedStrains { get; } = new();
         public ObservableCollection<ConcentratedStrain> ConcentratedStrains { get; } = new();
@@ -20,8 +38,8 @@ namespace EasyCAD
 
         public Construction() 
         {
-            ConstructionChanged += RemoveUnnecessaryConcentratedStrains;
-            ConstructionChanged += RemoveUnnecessaryDistributedStrains;
+            //ConstructionChanged += RemoveUnnecessaryConcentratedStrains;
+            //ConstructionChanged += RemoveUnnecessaryDistributedStrains;
         }
 
         public void AddRod(Rod rod)
@@ -33,6 +51,8 @@ namespace EasyCAD
         public void RemoveRod(Rod rod)
         {
             Rods.Remove(rod);
+            RemoveUnnecessaryConcentratedStrains();
+            RemoveUnnecessaryDistributedStrains();
             ConstructionChanged?.Invoke();
         }
 
@@ -46,11 +66,14 @@ namespace EasyCAD
                 DistributedStrains.Remove(existingStrain.Value);
             }
             DistributedStrains.Add(new DistributedStrain(number, qx));
+
+            ConstructionChanged?.Invoke();
         }
 
         public void RemoveDistributedStrain(DistributedStrain strain)
         {
             DistributedStrains.Remove(strain);
+            ConstructionChanged?.Invoke();
         }
 
         private void RemoveUnnecessaryDistributedStrains()
@@ -86,12 +109,15 @@ namespace EasyCAD
                 ConcentratedStrains.Remove(existingStrain.Value);
             }
             ConcentratedStrains.Add(new ConcentratedStrain(number, F));
+
+            ConstructionChanged?.Invoke();
         }
 
         public void RemoveConcentratedStrain(ConcentratedStrain strain)
         {
             ConcentratedStrains.Remove(strain);
-            //ConstructionChanged?.Invoke();
+
+            ConstructionChanged?.Invoke();
         }
 
         private void RemoveUnnecessaryConcentratedStrains()
@@ -136,7 +162,7 @@ namespace EasyCAD
             return length;
         }
 
-        public Rod GetRodByLength(float L)
+        public Rod? GetRodByLength(double L)
         {
             if (L == 0) return Rods[0];
             if (L > Length) return Rods.Last();
@@ -149,7 +175,7 @@ namespace EasyCAD
             return null;
         }
 
-        public float GetLengthBeforeRod(float L)
+        public double GetLengthBeforeRod(double L)
         {
             if (L == 0) return L;
             if (L >= Length) L = Length;
