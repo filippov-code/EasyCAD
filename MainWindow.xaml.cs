@@ -46,12 +46,12 @@ namespace EasyCAD
                 MessageBox.Show("Значение A для стержня некорректно");
                 return;
             }
-            if (!float.TryParse(newETextBox.Text, out E))
+            if (!float.TryParse(newETextBox.Text, out E) || E <= 0)
             {
                 MessageBox.Show("Значение E для стержня некорректно");
                 return;
             }
-            if (!float.TryParse(newOTextBox.Text, out o))
+            if (!float.TryParse(newOTextBox.Text, out o) || o <= 0)
             {
                 MessageBox.Show("Значение o для стержня некорректно");
                 return;
@@ -102,7 +102,7 @@ namespace EasyCAD
         private void AddConcentratedStrain(object sender, RoutedEventArgs e)
         {
             int number;
-            if (!int.TryParse(newFNumberTextBox.Text, out number) || number < 1)
+            if (!int.TryParse(newFNumberTextBox.Text, out number) || number < 1 || number > Construction.NodesCount)
             {
                 MessageBox.Show("Значение номера узла некорректно");
                 return;
