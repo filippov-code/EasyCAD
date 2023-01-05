@@ -38,6 +38,5 @@
 ![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/5.png)
 ### Функции сохранения проекта, открытия и сохранения результатов с анализом
 ![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/3.png)
-![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/1.png)
 ![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/results.png)
 ![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/saving.png)
