@@ -8,9 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LiveCharts" Version="0.9.7" />
+    <PackageReference Include="EPPlus" Version="4.5.3.3" />
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
-    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.602" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 

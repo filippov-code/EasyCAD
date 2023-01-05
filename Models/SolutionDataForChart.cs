@@ -140,5 +140,14 @@ namespace EasyCAD.Models
                            .Stroke((value, index) => index == 0 || value == UxSeries.Last().Values[UxSeries.Last().Values.Count - 2] ? Brushes.Gray : Brushes.Transparent);
             }
         }
+
+        public void Clear()
+        {
+            NxSeries[0].Values.Clear();
+            oxSeries[0].Values.Clear();
+            foreach (var series in UxSeries)
+                series.Configuration = null;
+            UxSeries.Clear();
+        }
     }
 }

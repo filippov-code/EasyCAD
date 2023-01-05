@@ -1,10 +1,15 @@
 ﻿using EasyCAD.Models;
+using OfficeOpenXml.Style;
+using OfficeOpenXml;
 using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Microsoft.Win32;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace EasyCAD
 {
@@ -14,8 +19,8 @@ namespace EasyCAD
     public partial class MainWindow : Window
     {
         public Construction Construction { get; private set; } = new();
-        private Solution? currentSolution;
-        public SolutionDataForChart? SolutionDataForChart { get; } = null;
+        private Solution? currentSolution = null;
+        public SolutionDataForChart? SolutionDataForChart { get; private set; } = null;
 
        
 
@@ -207,8 +212,8 @@ namespace EasyCAD
             leftProp.Visibility = Construction.LeftProp ? Visibility.Visible : Visibility.Hidden;
             rightProp.Visibility = Construction.RightProp ? Visibility.Visible : Visibility.Hidden;
 
-            if (Construction.Rods.Count == 0) return;
             canvas.Children.Clear();
+            if (Construction.Rods.Count == 0) return;
 
             double unitsPerMeter = canvas.ActualWidth / Construction.Rods.Sum(x => x.L);
             double unitsPerArea = canvas.ActualHeight / Construction.Rods.Max(x => x.A);
@@ -308,7 +313,7 @@ namespace EasyCAD
             connectorGeometry.StartPoint = p1;
             connectorGeometry.EndPoint = p2;
             lineGroup.Children.Add(connectorGeometry);
-            Path path = new System.Windows.Shapes.Path();
+            System.Windows.Shapes.Path path = new System.Windows.Shapes.Path();
             path.Data = lineGroup;
             path.StrokeThickness = 4;
             path.Stroke = path.Fill = brush;
@@ -332,6 +337,130 @@ namespace EasyCAD
             {
                 Construction.LeftProp = true;
                 Construction.RightProp = true;
+            }
+        }
+
+        private void SaveProject(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveProjectDialog = new SaveFileDialog();
+            saveProjectDialog.Filter = "EasyCAD Project (*.ecad)|*.ecad";
+            if (Construction == null)
+            {
+                MessageBox.Show("Конструкция не задана");
+            }
+            else if (saveProjectDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    using (FileStream fs = new FileStream(saveProjectDialog.FileName, FileMode.OpenOrCreate))
+                    {
+                        formatter.Serialize(fs, Construction);
+                    }
+                    MessageBox.Show("Успешно");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка: {ex.Message}");
+                }
+            }
+        }
+
+        private void OpenProject(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openProjectDialog = new OpenFileDialog();
+            openProjectDialog.Filter = "EasyCAD Project (*.ecad)|*.ecad";
+            if (openProjectDialog.ShowDialog() == true)
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                using (FileStream fs = new FileStream(openProjectDialog.FileName, FileMode.OpenOrCreate))
+                {
+                    Construction loadedConstruction = (Construction)formatter.Deserialize(fs);
+
+                    Construction.Rods.Clear();
+                    Construction.DistributedStrains.Clear();
+                    Construction.ConcentratedStrains.Clear();
+
+                    loadedConstruction.Rods.ToList().ForEach(x => Construction.Rods.Add(x));
+                    loadedConstruction.DistributedStrains.ToList().ForEach(x => Construction.DistributedStrains.Add(x));
+                    loadedConstruction.ConcentratedStrains.ToList().ForEach(x => Construction.ConcentratedStrains.Add(x));
+                    Construction.RightProp = loadedConstruction.RightProp;
+                    Construction.LeftProp = loadedConstruction.LeftProp;
+                    if (Construction.RightProp && Construction.LeftProp)
+                    {
+                        middlePropRadio.IsChecked = true;
+                    }
+                    else if (Construction.RightProp)
+                    {
+                        rightPropRadio.IsChecked = true;
+                    }
+                    else if (Construction.LeftProp)
+                    {
+                        leftPropRadio.IsChecked = true;
+                    }
+                    currentSolution = null;
+                    SolutionDataForChart.Clear();
+
+                    RedrawConstruction();
+                }
+            }
+        }
+
+        private void SaveResults(object sender, RoutedEventArgs e)
+        {
+            if (Construction == null)
+            {
+                MessageBox.Show("Конструкция не задана");
+                return;
+            }
+            if (currentSolution == null)
+            {
+                MessageBox.Show("Сначала нужно рассчитать конструкцию");
+                return;
+            }
+            try
+            {
+                double[,] values = currentSolution.GetValuesTable(2);
+
+                var package = new ExcelPackage();
+
+                var sheet = package.Workbook.Worksheets.Add("Результаты расчёта");
+
+                sheet.Cells["A1"].Value = "L";
+                sheet.Cells["B1"].Value = "Nx";
+                sheet.Cells["C1"].Value = "Ox";
+                sheet.Cells["D1"].Value = "O";
+                sheet.Cells["E1"].Value = "Ux";
+                sheet.Cells["A1:E1"].Style.Font.Bold = true;
+
+                sheet.Cells["A1:E1"].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                sheet.Cells["A1"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                sheet.Cells["B1"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightSeaGreen);
+                sheet.Cells["C1"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Orange);
+                sheet.Cells["D1"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.OliveDrab);
+                sheet.Cells["E1"].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Gray);
+
+                for (int i = 2; i <= values.GetLength(0) + 1; i++)
+                {
+                    sheet.Cells[i, 1].Value = values[i - 2, 0]; //L
+                    sheet.Cells[i, 2].Value = values[i - 2, 1]; //nx
+                    sheet.Cells[i, 3].Value = values[i - 2, 2]; //ox
+                    sheet.Cells[i, 4].Value = values[i - 2, 3]; //o
+                    sheet.Cells[i, 5].Value = values[i - 2, 4]; //ux
+
+                    if (Math.Abs(values[i - 2, 2]) > values[i - 2, 3])
+                        sheet.Cells[$"C{i}:D{i}"].Style.Font.Color.SetColor(System.Drawing.Color.Red);
+                }
+
+                SaveFileDialog saveResultsDialog = new SaveFileDialog();
+                saveResultsDialog.Filter = "Microsoft Excel (*.xlsx)|*.xlsx";
+                if (saveResultsDialog.ShowDialog() == true)
+                    File.WriteAllBytes(saveResultsDialog.FileName, package.GetAsByteArray());
+
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show($"Ошибка: {exc.Message}");
             }
         }
     }

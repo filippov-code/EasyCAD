@@ -8,6 +8,7 @@ namespace EasyCAD
     [Serializable]
     public class Construction
     {
+        [NonSerialized]
         public Action ConstructionChanged;
         private bool leftProp;
         public bool LeftProp 
