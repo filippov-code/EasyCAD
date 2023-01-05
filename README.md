@@ -25,6 +25,19 @@
 ## Стек
 + C#, .NET6
 + WPF
++ EPPlus для работы с Excel
++ LiveCharts для работы с графиками
 
 ## Изображения
-скоро тут появятся изображения
+### Прошлая версия программы на WinForms
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/old.png)
+### Обновленная версия на WPF
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/1.png)
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/2.png)
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/4.png)
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/5.png)
+### Функции сохранения проекта, открытия и сохранения результатов с анализом
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/3.png)
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/1.png)
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/results.png)
+![](https://github.com/filippov-code/EasyCAD/blob/master/screenshots/saving.png)
